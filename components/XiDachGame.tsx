@@ -17,6 +17,7 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
     const saved = localStorage.getItem('xidach_state');
     try {
         const parsed = saved ? JSON.parse(saved) : { players: initialPlayers, history: [], dealerId };
+        // Merge defaults in case of migration
         if (!parsed.defaultBets) parsed.defaultBets = {};
         if (!parsed.dealerId) parsed.dealerId = dealerId; 
         return parsed;
@@ -33,8 +34,6 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
   const [isChangeDealerOpen, setIsChangeDealerOpen] = useState(false);
   const [showPlayerManager, setShowPlayerManager] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-
-  // State quản lý xác nhận nút xóa
   const [confirmAction, setConfirmAction] = useState<'NONE' | 'RESET_SCORE' | 'RESET_ALL'>('NONE');
 
   useEffect(() => { localStorage.setItem('xidach_state', JSON.stringify(gameState)); }, [gameState]);
@@ -92,19 +91,15 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
       const result = results[p.id];
       let finalChange = 0;
 
+      // Logic tính điểm
       if (dealerMultiplier > 1) {
-          if (playerMult === dealerMultiplier) {
-              finalChange = 0; 
-          } else if (playerMult > dealerMultiplier) {
-              finalChange = betAmount * playerMult;
-          } else {
-              finalChange = -(betAmount * dealerMultiplier);
-          }
+          if (playerMult === dealerMultiplier) finalChange = 0; 
+          else if (playerMult > dealerMultiplier) finalChange = betAmount * playerMult;
+          else finalChange = -(betAmount * dealerMultiplier);
       } 
       else {
-          if (playerMult > 1) {
-              finalChange = betAmount * playerMult;
-          } else {
+          if (playerMult > 1) finalChange = betAmount * playerMult;
+          else {
               if (result === 'WIN') finalChange = betAmount;
               else if (result === 'LOSE') finalChange = -betAmount;
               else finalChange = 0;
@@ -198,7 +193,6 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
         />
       )}
 
-      {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
           <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-zoom-in">
@@ -211,7 +205,6 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
                 </button>
              </div>
              <div className="space-y-3">
-                {/* Reset Score Button - Double Tap Confirmation */}
                 {confirmAction === 'RESET_SCORE' ? (
                   <button 
                     type="button"
@@ -230,7 +223,6 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
                   </button>
                 )}
 
-                {/* Reset ALL Button - Double Tap Confirmation */}
                 {confirmAction === 'RESET_ALL' ? (
                   <button 
                     type="button"
@@ -268,7 +260,6 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
               <button onClick={() => setIsRoundOpen(false)} className="p-2 bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
             </div>
             
-            {/* Dealer Status */}
             <div className="bg-white px-4 py-3 border-b border-gray-100">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-4 h-4 text-yellow-600" />
@@ -338,7 +329,6 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
         </div>
       )}
       
-      {/* Change Dealer Modal */}
       {isChangeDealerOpen && (
           <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
             <div className="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl animate-zoom-in">

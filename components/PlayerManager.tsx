@@ -15,11 +15,8 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
-  
-  // State quản lý ID đang chờ xác nhận xóa
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // Tự động hủy trạng thái xác nhận xóa sau 3 giây nếu không bấm tiếp
   useEffect(() => {
     if (deleteConfirmId) {
       const timer = setTimeout(() => setDeleteConfirmId(null), 3000);
@@ -39,7 +36,7 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
   };
 
   const handleRemoveClick = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Quan trọng: Ngăn chặn click lan ra ngoài làm đóng modal
+    e.stopPropagation();
     
     if (players.length <= 2) {
       alert("Cần tối thiểu 2 người chơi để tiếp tục.");
@@ -51,12 +48,10 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
     }
 
     if (deleteConfirmId === id) {
-      // Đã xác nhận -> Xóa thật
       const updatedList = players.filter(p => p.id !== id);
       onUpdatePlayers(updatedList);
       setDeleteConfirmId(null);
     } else {
-      // Bấm lần 1 -> Chuyển sang chế độ chờ xác nhận
       setDeleteConfirmId(id);
     }
   };
@@ -92,7 +87,6 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
           </div>
         )}
 
-        {/* Add Player Section */}
         <div className="flex gap-2 mb-6">
           <input 
             type="text" 
@@ -108,11 +102,9 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
           </Button>
         </div>
 
-        {/* Player List */}
         <div className="space-y-2 max-h-[50vh] overflow-y-auto mb-4 pr-1">
           {players.map((p) => (
             <div key={p.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${deleteConfirmId === p.id ? 'bg-red-50 border-red-200 ring-1 ring-red-200' : 'bg-gray-50 border-gray-100'}`}>
-              
               {editingId === p.id ? (
                 <div className="flex-1 flex gap-2 mr-2">
                    <input 
@@ -137,7 +129,6 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
                       <Pencil className="w-4 h-4" />
                     </button>
                  )}
-                
                 <button 
                   type="button"
                   onClick={(e) => handleRemoveClick(e, p.id)} 
@@ -145,7 +136,7 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
                     dealerId === p.id || isRoundOpen 
                       ? 'p-2 text-gray-300 cursor-not-allowed' 
                       : deleteConfirmId === p.id
-                        ? 'px-3 py-2 bg-red-500 text-white shadow-md font-bold text-xs' // Biến thành nút chữ "Xóa"
+                        ? 'px-3 py-2 bg-red-500 text-white shadow-md font-bold text-xs'
                         : 'p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 active:bg-red-100'
                   }`}
                   disabled={dealerId === p.id || !!isRoundOpen}
@@ -156,7 +147,6 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
             </div>
           ))}
         </div>
-
         <Button fullWidth variant="secondary" onClick={onClose}>Đóng</Button>
       </div>
     </div>

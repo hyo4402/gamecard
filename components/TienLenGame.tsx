@@ -146,7 +146,7 @@ export const TienLenGame: React.FC<TienLenGameProps> = ({ initialPlayers, onBack
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   {Object.entries(round.scoreChanges).map(([pid, value]) => {
-                    const score = value;
+                    const score = value as number;
                     if (score === 0) return null;
                     const pName = gameState.players.find(p => p.id === pid)?.name || 'Người cũ';
                     return <span key={pid} className={`${score > 0 ? 'text-green-600' : 'text-red-600'} font-medium`}>{pName}: {score > 0 ? '+' : ''}{score}</span>;

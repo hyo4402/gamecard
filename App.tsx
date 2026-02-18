@@ -16,13 +16,16 @@ const App: React.FC = () => {
     setMode(selectedMode);
     
     // Check if there's a saved session for this mode to resume
-    const savedState = localStorage.getItem(selectedMode === 'TIENLEN' ? 'tienlen_state' : 'xidach_state');
-    if (savedState) {
-      // If save exists, we can jump to playing, but we let the specific Game Component handle loading the state.
-      // We just need to signal we are playing.
-      // However, for consistency, we pass empty players here and let the component hydrate from local storage.
-      setStep('PLAYING');
-    } else {
+    try {
+      const savedState = localStorage.getItem(selectedMode === 'TIENLEN' ? 'tienlen_state' : 'xidach_state');
+      if (savedState) {
+        setStep('PLAYING');
+      } else {
+        setStep('SETUP_PLAYERS');
+      }
+    } catch (e) {
+      // If local storage fails, just go to setup
+      console.error(e);
       setStep('SETUP_PLAYERS');
     }
   };
@@ -34,16 +37,12 @@ const App: React.FC = () => {
   };
 
   const handleBack = () => {
-    // When going back to home, we don't clear local storage, effectively "Pausing" the game
     setStep('SELECT_GAME');
     setMode('HOME');
     setPlayers([]);
   };
 
-  if (step === 'SELECT_GAME') {
-    return <GameSelector onSelect={handleGameSelect} />;
-  }
-
+  // 1. Setup Phase
   if (step === 'SETUP_PLAYERS') {
     return (
       <Layout title={`Thiết lập ${mode === 'TIENLEN' ? 'Tiến Lên' : 'Xì Dách'}`} onBack={handleBack}>
@@ -52,15 +51,20 @@ const App: React.FC = () => {
     );
   }
 
-  if (mode === 'TIENLEN') {
-    return <TienLenGame initialPlayers={players} onBack={handleBack} />;
+  // 2. Playing Phase
+  if (step === 'PLAYING') {
+    if (mode === 'TIENLEN') {
+      return <TienLenGame initialPlayers={players} onBack={handleBack} />;
+    }
+
+    if (mode === 'XIDACH') {
+      return <XiDachGame initialPlayers={players} dealerId={dealerId} onBack={handleBack} />;
+    }
   }
 
-  if (mode === 'XIDACH') {
-    return <XiDachGame initialPlayers={players} dealerId={dealerId} onBack={handleBack} />;
-  }
-
-  return null;
+  // 3. Default / Fallback / Select Phase
+  // Luôn trả về GameSelector nếu không khớp điều kiện trên để tránh màn hình trắng
+  return <GameSelector onSelect={handleGameSelect} />;
 };
 
 export default App;

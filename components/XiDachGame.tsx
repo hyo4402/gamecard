@@ -369,7 +369,7 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                   {Object.entries(round.scoreChanges).map(([pid, value]) => {
-                    const score = value;
+                    const score = value as number;
                     const pName = gameState.players.find(p => p.id === pid)?.name || 'Người cũ';
                     return (
                       <div key={pid} className="flex justify-between">

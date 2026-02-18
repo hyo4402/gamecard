@@ -39,7 +39,7 @@ export const PlayerManager: React.FC<PlayerManagerProps> = ({ players, onUpdateP
   };
 
   const handleRemoveClick = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
+    e.stopPropagation(); // Quan trọng: Ngăn chặn click lan ra ngoài làm đóng modal
     
     if (players.length <= 2) {
       alert("Cần tối thiểu 2 người chơi để tiếp tục.");

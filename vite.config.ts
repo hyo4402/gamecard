@@ -4,6 +4,10 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Quan trọng: base './' giúp đường dẫn hoạt động trên GitHub Pages bất kể tên repo là gì
+  // QUAN TRỌNG: base './' giúp ứng dụng chạy được trong thư mục con (ví dụ: username.github.io/repo-name)
   base: './', 
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+  }
 });

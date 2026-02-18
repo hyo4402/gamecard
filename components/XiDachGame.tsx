@@ -15,10 +15,14 @@ interface XiDachGameProps {
 export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId, onBack }) => {
   const [gameState, setGameState] = useState<GameState>(() => {
     const saved = localStorage.getItem('xidach_state');
-    const parsed = saved ? JSON.parse(saved) : { players: initialPlayers, history: [], dealerId };
-    if (!parsed.defaultBets) parsed.defaultBets = {};
-    if (!parsed.dealerId) parsed.dealerId = dealerId; 
-    return parsed;
+    try {
+        const parsed = saved ? JSON.parse(saved) : { players: initialPlayers, history: [], dealerId };
+        if (!parsed.defaultBets) parsed.defaultBets = {};
+        if (!parsed.dealerId) parsed.dealerId = dealerId; 
+        return parsed;
+    } catch {
+        return { players: initialPlayers, history: [], dealerId, defaultBets: {} };
+    }
   });
 
   const [bets, setBets] = useState<Record<string, string>>({}); 
@@ -56,10 +60,7 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
   }, [isRoundOpen]);
 
   const updatePlayersList = (newPlayers: Player[]) => {
-    setGameState(prev => ({
-      ...prev,
-      players: newPlayers
-    }));
+    setGameState(prev => ({ ...prev, players: newPlayers }));
   };
 
   const updateScores = (changes: Record<string, number>, description: string) => {
@@ -369,7 +370,7 @@ export const XiDachGame: React.FC<XiDachGameProps> = ({ initialPlayers, dealerId
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                   {Object.entries(round.scoreChanges).map(([pid, value]) => {
-                    const score = value as number;
+                    const score = Number(value);
                     const pName = gameState.players.find(p => p.id === pid)?.name || 'Người cũ';
                     return (
                       <div key={pid} className="flex justify-between">

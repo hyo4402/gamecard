@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameMode, Player } from './types';
 import { GameSelector } from './components/GameSelector';
 import { PlayerSetup } from './components/PlayerSetup';
@@ -12,22 +12,35 @@ const App: React.FC = () => {
   const [dealerId, setDealerId] = useState<string>('');
   const [step, setStep] = useState<'SELECT_GAME' | 'SETUP_PLAYERS' | 'PLAYING'>('SELECT_GAME');
 
+  // Load initial state safely
+  useEffect(() => {
+    // Optional: Auto-load last session logic could go here, 
+    // but for stability, we start at SELECT_GAME unless explicitly triggered by user interaction.
+  }, []);
+
   const handleGameSelect = (selectedMode: GameMode) => {
     setMode(selectedMode);
     
-    // Check if there's a saved session for this mode to resume
     try {
-      const savedState = localStorage.getItem(selectedMode === 'TIENLEN' ? 'tienlen_state' : 'xidach_state');
+      const savedKey = selectedMode === 'TIENLEN' ? 'tienlen_state' : 'xidach_state';
+      const savedState = localStorage.getItem(savedKey);
+      
       if (savedState) {
-        setStep('PLAYING');
-      } else {
-        setStep('SETUP_PLAYERS');
+        // Parse basic check to see if valid
+        const parsed = JSON.parse(savedState);
+        if (parsed && parsed.players && parsed.players.length > 0) {
+          setPlayers(parsed.players);
+          if (parsed.dealerId) setDealerId(parsed.dealerId);
+          setStep('PLAYING');
+          return;
+        }
       }
     } catch (e) {
-      // If local storage fails, just go to setup
-      console.error(e);
-      setStep('SETUP_PLAYERS');
+      console.error("Error loading saved state:", e);
     }
+    
+    // Default to setup if no valid save found
+    setStep('SETUP_PLAYERS');
   };
 
   const handleStartGame = (setupPlayers: Player[], dealer?: string) => {
@@ -40,9 +53,12 @@ const App: React.FC = () => {
     setStep('SELECT_GAME');
     setMode('HOME');
     setPlayers([]);
+    setDealerId('');
   };
 
-  // 1. Setup Phase
+  // RENDER LOGIC
+  
+  // 1. Setup Screen
   if (step === 'SETUP_PLAYERS') {
     return (
       <Layout title={`Thiết lập ${mode === 'TIENLEN' ? 'Tiến Lên' : 'Xì Dách'}`} onBack={handleBack}>
@@ -51,7 +67,7 @@ const App: React.FC = () => {
     );
   }
 
-  // 2. Playing Phase
+  // 2. Game Screen
   if (step === 'PLAYING') {
     if (mode === 'TIENLEN') {
       return <TienLenGame initialPlayers={players} onBack={handleBack} />;
@@ -62,8 +78,7 @@ const App: React.FC = () => {
     }
   }
 
-  // 3. Default / Fallback / Select Phase
-  // Luôn trả về GameSelector nếu không khớp điều kiện trên để tránh màn hình trắng
+  // 3. Fallback / Home Screen (Prevents white screen)
   return <GameSelector onSelect={handleGameSelect} />;
 };
 

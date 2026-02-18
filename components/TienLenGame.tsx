@@ -15,9 +15,13 @@ export const TienLenGame: React.FC<TienLenGameProps> = ({ initialPlayers, onBack
   const [gameState, setGameState] = useState<GameState>(() => {
     const saved = localStorage.getItem('tienlen_state');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (!parsed.tienLenRules) parsed.tienLenRules = DEFAULT_TIENLEN_RULES;
-      return parsed;
+      try {
+        const parsed = JSON.parse(saved);
+        if (!parsed.tienLenRules) parsed.tienLenRules = DEFAULT_TIENLEN_RULES;
+        return parsed;
+      } catch (e) {
+        console.error("Error parsing tienlen state", e);
+      }
     }
     return { players: initialPlayers, history: [], tienLenRules: DEFAULT_TIENLEN_RULES };
   });
@@ -28,8 +32,6 @@ export const TienLenGame: React.FC<TienLenGameProps> = ({ initialPlayers, onBack
   const [pigVictim, setPigVictim] = useState<string | null>(null);
   const [editingRules, setEditingRules] = useState<TienLenRules>(DEFAULT_TIENLEN_RULES);
   const [showPlayerManager, setShowPlayerManager] = useState(false);
-  
-  // State quản lý xác nhận nút xóa (tránh dùng window.confirm bị đơ trên mobile)
   const [confirmAction, setConfirmAction] = useState<'NONE' | 'RESET_SCORE' | 'RESET_ALL'>('NONE');
 
   useEffect(() => { localStorage.setItem('tienlen_state', JSON.stringify(gameState)); }, [gameState]);
@@ -43,10 +45,7 @@ export const TienLenGame: React.FC<TienLenGameProps> = ({ initialPlayers, onBack
   };
 
   const updatePlayersList = (newPlayers: Player[]) => {
-    setGameState(prev => ({
-      ...prev,
-      players: newPlayers
-    }));
+    setGameState(prev => ({ ...prev, players: newPlayers }));
   };
 
   const handleRankSelection = (playerId: string) => {
@@ -146,7 +145,7 @@ export const TienLenGame: React.FC<TienLenGameProps> = ({ initialPlayers, onBack
                 </div>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   {Object.entries(round.scoreChanges).map(([pid, value]) => {
-                    const score = value as number;
+                    const score = Number(value); // Explicit cast
                     if (score === 0) return null;
                     const pName = gameState.players.find(p => p.id === pid)?.name || 'Người cũ';
                     return <span key={pid} className={`${score > 0 ? 'text-green-600' : 'text-red-600'} font-medium`}>{pName}: {score > 0 ? '+' : ''}{score}</span>;
